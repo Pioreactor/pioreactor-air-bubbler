@@ -1,0 +1,141 @@
+import signal, sys, time
+import click
+from pioreactor.background_jobs.base import BackgroundJob
+from pioreactor.whoami import get_latest_experiment_name, get_unit_name, is_testing_env
+from pioreactor.utils import pio_jobs_running
+from pioreactor.config import config
+from pioreactor.hardware_mappings import PWM_TO_PIN
+from pioreactor.pubsub import subscribe
+from pioreactor.utils.timing import RepeatedTimer
+
+if is_testing_env():
+    import fake_rpi
+
+    sys.modules["RPi"] = fake_rpi.RPi  # Fake RPi
+    sys.modules["RPi.GPIO"] = fake_rpi.RPi.GPIO  # Fake GPIO
+
+import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BCM)
+
+def clamp(minimum, x, maximum):
+    return max(minimum, min(x, maximum))
+
+
+class AirPump(BackgroundJob):
+
+    def __init__(self, duty_cycle, hertz=60, unit=None, experiment=None):
+        super(AirPump, self).__init__(
+            job_name="test", unit=unit, experiment=experiment
+        )
+
+        self.hertz = hertz
+        self.pin = PWM_TO_PIN[config.getint("PWM", "air_pump")]
+        self.duty_cycle = duty_cycle
+        GPIO.setup(self.pin, GPIO.OUT)
+        GPIO.output(self.pin, 0)
+        self.pwm = GPIO.PWM(self.pin, self.hertz)
+        self.set_duty_cycle(duty_cycle)
+        self.start_passive_listeners()
+
+    def on_disconnect(self):
+        # not necessary, but will update the UI to show that the speed is 0 (off)
+        if hasattr(self, "sneak_in_timer"):
+            self.sneak_in_timer.cancel()
+
+        self.stop_pumping()
+        GPIO.cleanup()
+
+    def stop_pumping(self):
+        # if the user unpauses, we want to go back to their previous value, and not the default.
+        self._previous_duty_cycle = self.duty_cycle
+        self.set_duty_cycle(0)
+
+    def set_state(self, new_state):
+        if new_state != self.READY:
+            try:
+                self.stop_pumping()
+            except AttributeError:
+                pass
+        elif (new_state == self.READY) and (self.state == self.SLEEPING):
+            self.duty_cycle = self._previous_duty_cycle
+            self.start_pumping()
+        super(AirPump, self).set_state(new_state)
+
+    def set_duty_cycle(self, value):
+        self.duty_cycle = clamp(0, round(float(value)), 100)
+        self.pwm.ChangeDutyCycle(self.duty_cycle)
+
+
+    def start_passive_listeners(self):
+
+        self.subscribe_and_callback(
+            self.turn_off_pump_between_readings,
+            f"pioreactor/{self.unit}/{self.experiment}/adc_reader/interval"
+        )
+
+
+    def turn_off_pump_between_readings(self, _):
+        """
+        post_duration: how long to wait (seconds) after the ADS reading before running sneak_in
+        pre_duration: duration between stopping the action and the next ADS reading
+        """
+        try:
+            self.sneak_in_timer.cancel()
+        except AttributeError:
+            pass
+
+        post_duration, pre_duration = 1.0, 2.0
+
+        def sneak_in():
+            self.set_duty_cycle(config.getint('air_pump', 'duty_cycle'))
+            time.sleep(ads_interval - (post_duration + pre_duration))
+            self.set_duty_cycle(0)
+
+        # this could fail in the following way:
+        # in the same experiment, the od_reading fails so that the ADC attributes are never
+        # cleared. Later, this job starts, and it will pick up the _old_ ADC attributes.
+        ads_start_time = float(
+            subscribe(
+                f"pioreactor/{self.unit}/{self.experiment}/adc_reader/first_ads_obs_time"
+            ).payload
+        )
+
+        ads_interval = float(
+            subscribe(
+                f"pioreactor/{self.unit}/{self.experiment}/adc_reader/interval"
+            ).payload
+        )
+
+        # get interval, and confirm that the requirements are possible: post_duration + pre_duration <= ADS interval
+        if ads_interval <= (post_duration + pre_duration):
+            raise ValueError(
+                "Your samples_per_second is too high to add in a pump."
+            )
+
+        self.sneak_in_timer = RepeatedTimer(ads_interval, sneak_in, run_immediately=False)
+
+        time_to_next_ads_reading = ads_interval - (
+            (time.time() - ads_start_time) % ads_interval
+        )
+
+        time.sleep(time_to_next_ads_reading + post_duration)
+        self.sneak_in_timer.start()
+
+
+
+@click.command(name="air_pump")
+def click_air_pump():
+    """
+    turn on air pump
+    """
+    if "od_reading" in pio_jobs_running():
+        dc = 0
+    else:
+        dc = config.getint('air_pump', 'duty_cycle')
+
+    AirPump(duty_cycle=dc, unit=get_unit_name(), experiment=get_latest_experiment_name())
+
+    signal.pause()
+
+
