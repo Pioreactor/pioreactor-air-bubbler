@@ -96,9 +96,12 @@ class Bubbler(BackgroundJob):
         # pre_duration: duration between stopping the action and the next ADS reading
         # we have a pretty large pre_duration, since the air pump can introduce microbubbles
         # that we want to see dissipate.
-        post_duration, pre_duration = 0.6, 3.0
+        post_duration, pre_duration = 0.6, 1.0
 
         def sneak_in():
+            if self.state != self.READY:
+                return
+
             self.set_duty_cycle(config.getint("bubbler", "duty_cycle"))
             time.sleep(ads_interval - (post_duration + pre_duration))
             self.set_duty_cycle(0)
