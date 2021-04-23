@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import signal, sys, time
 import click
 from pioreactor.background_jobs.base import BackgroundJob
@@ -18,12 +19,12 @@ import RPi.GPIO as GPIO
 
 GPIO.setmode(GPIO.BCM)
 
+
 def clamp(minimum, x, maximum):
     return max(minimum, min(x, maximum))
 
 
 class Bubbler(BackgroundJob):
-
     def __init__(self, duty_cycle, hertz=60, unit=None, experiment=None):
         super(Bubbler, self).__init__(
             job_name="bubbler", unit=unit, experiment=experiment
@@ -69,20 +70,18 @@ class Bubbler(BackgroundJob):
         self.duty_cycle = clamp(0, round(float(value)), 100)
         self.pwm.ChangeDutyCycle(self.duty_cycle)
 
-
     def start_passive_listeners(self):
 
         self.subscribe_and_callback(
             self.turn_off_pump_between_readings,
-            f"pioreactor/{self.unit}/{self.experiment}/adc_reader/interval"
+            f"pioreactor/{self.unit}/{self.experiment}/adc_reader/interval",
         )
-
 
     def turn_off_pump_between_readings(self, msg):
 
         if not msg.payload:
             # OD reading stopped, turn on bubbler always and exit
-            self.set_duty_cycle(config.getint('bubbler', 'duty_cycle'))
+            self.set_duty_cycle(config.getint("bubbler", "duty_cycle"))
             return
 
         # OD started - turn off pump immediately
@@ -93,13 +92,14 @@ class Bubbler(BackgroundJob):
         except AttributeError:
             pass
 
-
         # post_duration: how long to wait (seconds) after the ADS reading before running sneak_in
-        #pre_duration: duration between stopping the action and the next ADS reading
-        post_duration, pre_duration = 0.6, 2.0
+        # pre_duration: duration between stopping the action and the next ADS reading
+        # we have a pretty large pre_duration, since the air pump can introduce microbubbles
+        # that we want to see dissipate.
+        post_duration, pre_duration = 0.6, 3.0
 
         def sneak_in():
-            self.set_duty_cycle(config.getint('bubbler', 'duty_cycle'))
+            self.set_duty_cycle(config.getint("bubbler", "duty_cycle"))
             time.sleep(ads_interval - (post_duration + pre_duration))
             self.set_duty_cycle(0)
 
@@ -120,9 +120,7 @@ class Bubbler(BackgroundJob):
 
         # get interval, and confirm that the requirements are possible: post_duration + pre_duration <= ADS interval
         if ads_interval <= (post_duration + pre_duration):
-            raise ValueError(
-                "Your samples_per_second is too high to add in a pump."
-            )
+            raise ValueError("Your samples_per_second is too high to add in a pump.")
 
         self.sneak_in_timer = RepeatedTimer(ads_interval, sneak_in, run_immediately=False)
 
@@ -134,7 +132,6 @@ class Bubbler(BackgroundJob):
         self.sneak_in_timer.start()
 
 
-
 @click.command(name="bubbler")
 def click_bubbler():
     """
@@ -143,9 +140,8 @@ def click_bubbler():
     if "od_reading" in pio_jobs_running():
         dc = 0
     else:
-        dc = config.getint('bubbler', 'duty_cycle')
+        dc = config.getint("bubbler", "duty_cycle")
 
     Bubbler(duty_cycle=dc, unit=get_unit_name(), experiment=get_latest_experiment_name())
 
     signal.pause()
-
