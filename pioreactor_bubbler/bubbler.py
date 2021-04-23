@@ -31,11 +31,14 @@ class Bubbler(BackgroundJob):
 
         self.hertz = hertz
         self.pin = PWM_TO_PIN[config.getint("PWM", "bubbler")]
-        self.duty_cycle = duty_cycle
         GPIO.setup(self.pin, GPIO.OUT)
         GPIO.output(self.pin, 0)
+
         self.pwm = GPIO.PWM(self.pin, self.hertz)
+        self.pwm.start(0)
+
         self.set_duty_cycle(duty_cycle)
+
         self.start_passive_listeners()
 
     def on_disconnect(self):
