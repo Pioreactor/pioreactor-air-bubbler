@@ -6,11 +6,11 @@ with open("requirements/requirements.txt") as f:
 
 
 setup(
-    name="pioreactor_airpump",
-    version="0.0.2",
+    name="pioreactor_bubbler",
+    version="0.0.3",
     license="MIT",
     long_description=open("README.md").read(),
     packages=find_packages(exclude=["*.tests", "*.tests.*"]),
     author_email="cam@pioreactor.com",
-    entry_points={'pioreactor.plugins': 'pioreactor_airpump = pioreactor_airpump'},
+    entry_points={'pioreactor.plugins': 'pioreactor_bubbler = pioreactor_bubbler'},
 )

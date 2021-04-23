@@ -22,15 +22,15 @@ def clamp(minimum, x, maximum):
     return max(minimum, min(x, maximum))
 
 
-class AirPump(BackgroundJob):
+class Bubbler(BackgroundJob):
 
     def __init__(self, duty_cycle, hertz=60, unit=None, experiment=None):
-        super(AirPump, self).__init__(
+        super(Bubbler, self).__init__(
             job_name="test", unit=unit, experiment=experiment
         )
 
         self.hertz = hertz
-        self.pin = PWM_TO_PIN[config.getint("PWM", "air_pump")]
+        self.pin = PWM_TO_PIN[config.getint("PWM", "bubbler")]
         self.duty_cycle = duty_cycle
         GPIO.setup(self.pin, GPIO.OUT)
         GPIO.output(self.pin, 0)
@@ -60,7 +60,7 @@ class AirPump(BackgroundJob):
         elif (new_state == self.READY) and (self.state == self.SLEEPING):
             self.duty_cycle = self._previous_duty_cycle
             self.start_pumping()
-        super(AirPump, self).set_state(new_state)
+        super(Bubbler, self).set_state(new_state)
 
     def set_duty_cycle(self, value):
         self.duty_cycle = clamp(0, round(float(value)), 100)
@@ -88,7 +88,7 @@ class AirPump(BackgroundJob):
         post_duration, pre_duration = 1.0, 2.0
 
         def sneak_in():
-            self.set_duty_cycle(config.getint('air_pump', 'duty_cycle'))
+            self.set_duty_cycle(config.getint('bubbler', 'duty_cycle'))
             time.sleep(ads_interval - (post_duration + pre_duration))
             self.set_duty_cycle(0)
 
@@ -124,18 +124,17 @@ class AirPump(BackgroundJob):
 
 
 
-@click.command(name="air_pump")
-def click_air_pump():
+@click.command(name="bubbler")
+def click_bubbler():
     """
-    turn on air pump
+    turn on bubbler
     """
     if "od_reading" in pio_jobs_running():
         dc = 0
     else:
-        dc = config.getint('air_pump', 'duty_cycle')
+        dc = config.getint('bubbler', 'duty_cycle')
 
-    AirPump(duty_cycle=dc, unit=get_unit_name(), experiment=get_latest_experiment_name())
+    Bubbler(duty_cycle=dc, unit=get_unit_name(), experiment=get_latest_experiment_name())
 
     signal.pause()
-
 
