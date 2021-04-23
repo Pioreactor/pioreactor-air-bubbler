@@ -87,12 +87,15 @@ class Bubbler(BackgroundJob):
         if not msg.payload:
             return
 
+        # od started - turn off pump immediately
+        self.set_duty_cycle(0)
+
         try:
             self.sneak_in_timer.cancel()
         except AttributeError:
             pass
 
-        post_duration, pre_duration = 1.0, 2.0
+        post_duration, pre_duration = 0.6, 1.0
 
         def sneak_in():
             self.set_duty_cycle(config.getint('bubbler', 'duty_cycle'))
