@@ -79,15 +79,13 @@ class Bubbler(BackgroundJob):
 
 
     def turn_off_pump_between_readings(self, msg):
-        """
-        post_duration: how long to wait (seconds) after the ADS reading before running sneak_in
-        pre_duration: duration between stopping the action and the next ADS reading
-        """
 
         if not msg.payload:
+            # OD reading stopped, turn on bubbler always and exit
+            self.set_duty_cycle(config.getint('bubbler', 'duty_cycle'))
             return
 
-        # od started - turn off pump immediately
+        # OD started - turn off pump immediately
         self.set_duty_cycle(0)
 
         try:
@@ -95,7 +93,10 @@ class Bubbler(BackgroundJob):
         except AttributeError:
             pass
 
-        post_duration, pre_duration = 0.6, 1.0
+
+        # post_duration: how long to wait (seconds) after the ADS reading before running sneak_in
+        #pre_duration: duration between stopping the action and the next ADS reading
+        post_duration, pre_duration = 0.6, 2.0
 
         def sneak_in():
             self.set_duty_cycle(config.getint('bubbler', 'duty_cycle'))
