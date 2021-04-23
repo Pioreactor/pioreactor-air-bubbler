@@ -26,4 +26,4 @@ duty_cycle=<a integer between 0 and 100>
 
 #### Hardware
 
-TODO
+Connect the PWM channel to the air pump's leads. Connect a

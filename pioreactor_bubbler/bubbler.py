@@ -26,7 +26,7 @@ class Bubbler(BackgroundJob):
 
     def __init__(self, duty_cycle, hertz=60, unit=None, experiment=None):
         super(Bubbler, self).__init__(
-            job_name="test", unit=unit, experiment=experiment
+            job_name="bubbler", unit=unit, experiment=experiment
         )
 
         self.hertz = hertz
@@ -75,11 +75,15 @@ class Bubbler(BackgroundJob):
         )
 
 
-    def turn_off_pump_between_readings(self, _):
+    def turn_off_pump_between_readings(self, msg):
         """
         post_duration: how long to wait (seconds) after the ADS reading before running sneak_in
         pre_duration: duration between stopping the action and the next ADS reading
         """
+
+        if not msg.payload:
+            return
+
         try:
             self.sneak_in_timer.cancel()
         except AttributeError:

@@ -9,6 +9,7 @@ setup(
     name="pioreactor_bubbler",
     version="0.0.3",
     license="MIT",
+    install_requires=REQUIREMENTS,
     long_description=open("README.md").read(),
     packages=find_packages(exclude=["*.tests", "*.tests.*"]),
     author_email="cam@pioreactor.com",
