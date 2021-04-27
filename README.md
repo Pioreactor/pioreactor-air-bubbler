@@ -16,7 +16,6 @@ pio run bubbler
 1\. From the command line, run:
 
 ```
-
 pip install pioreactor-bubbler
 ```
 

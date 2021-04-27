@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import signal, sys, time
 import click
-from pioreactor.background_jobs.base import BackgroundJob
+from pioreactor.background_jobs.base import PluginBackgroundJob
 from pioreactor.whoami import get_latest_experiment_name, get_unit_name, is_testing_env
 from pioreactor.utils import pio_jobs_running
 from pioreactor.config import config
@@ -24,10 +24,13 @@ def clamp(minimum, x, maximum):
     return max(minimum, min(x, maximum))
 
 
-class Bubbler(BackgroundJob):
+class Bubbler(PluginBackgroundJob):
     def __init__(self, duty_cycle, hertz=60, unit=None, experiment=None):
         super(Bubbler, self).__init__(
-            job_name="bubbler", unit=unit, experiment=experiment
+            job_name="bubbler",
+            plugin_name="pioreactor-bubbler",
+            unit=unit,
+            experiment=experiment,
         )
 
         self.hertz = hertz
