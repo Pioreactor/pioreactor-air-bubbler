@@ -51,7 +51,8 @@ class Bubbler(PluginBackgroundJob):
             self.sneak_in_timer.cancel()
 
         self.stop_pumping()
-        GPIO.cleanup()
+        self.pwm.stop()
+        GPIO.cleanup(self.pin)
 
     def stop_pumping(self):
         # if the user unpauses, we want to go back to their previous value, and not the default.
@@ -81,7 +82,7 @@ class Bubbler(PluginBackgroundJob):
         )
 
     def turn_off_pump_between_readings(self, msg):
-        self.logger.info("turn_off_pump_between_readings")
+
         if not msg.payload:
             # OD reading stopped, turn on bubbler always and exit
             self.set_duty_cycle(config.getint("bubbler", "duty_cycle"))
@@ -102,14 +103,12 @@ class Bubbler(PluginBackgroundJob):
         post_duration, pre_duration = 0.6, 1.0
 
         def sneak_in():
-            self.logger.info("sneak_in1")
             if self.state != self.READY:
                 return
 
             self.set_duty_cycle(config.getint("bubbler", "duty_cycle"))
             time.sleep(ads_interval - (post_duration + pre_duration))
             self.set_duty_cycle(0)
-            self.logger.info("sneak_in2")
 
         # this could fail in the following way:
         # in the same experiment, the od_reading fails so that the ADC attributes are never
