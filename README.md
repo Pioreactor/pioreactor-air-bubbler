@@ -13,14 +13,14 @@ pio run bubbler
 
 #### Software
 
-1\. From the command line, run:
+From the command line, run:
 
 ```
-pip install pioreactor-bubbler
+pio install-plugin pioreactor-bubbler
 ```
 
 
-2\. Add the following to your `config.ini`
+(Optional) Edit the following to your `config.ini`
 
 ```
 [PWM]
