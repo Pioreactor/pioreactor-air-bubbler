@@ -100,7 +100,7 @@ class Bubbler(PluginBackgroundJob):
         # pre_duration: duration between stopping the action and the next ADS reading
         # we have a pretty large pre_duration, since the air pump can introduce microbubbles
         # that we want to see dissipate.
-        post_duration, pre_duration = 0.6, 1.0
+        post_duration, pre_duration = 0.6, 1.25
 
         def sneak_in():
             if self.state != self.READY:

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from setuptools import setup, find_packages
+from setuptools import setup
 
 with open("requirements/requirements.txt") as f:
     REQUIREMENTS = f.read().splitlines()
@@ -7,11 +7,10 @@ with open("requirements/requirements.txt") as f:
 
 setup(
     name="pioreactor_bubbler",
-    version="0.0.3",
+    version="0.0.4",
     license="MIT",
     install_requires=REQUIREMENTS,
     long_description=open("README.md").read(),
-    packages=find_packages(exclude=["*.tests", "*.tests.*"]),
     author_email="cam@pioreactor.com",
-    entry_points={'pioreactor.plugins': 'pioreactor_bubbler = pioreactor_bubbler'},
+    entry_points={"pioreactor.plugins": "pioreactor_bubbler = pioreactor_bubbler"},
 )
