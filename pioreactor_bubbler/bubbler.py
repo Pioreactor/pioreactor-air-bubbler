@@ -31,7 +31,7 @@ class Bubbler(PluginBackgroundJob):
     def __init__(self, duty_cycle, hertz=60, unit=None, experiment=None):
         super(Bubbler, self).__init__(
             job_name="bubbler",
-            plugin_name="pioreactor-bubbler",
+            plugin_name="pioreactor_bubbler",
             unit=unit,
             experiment=experiment,
         )

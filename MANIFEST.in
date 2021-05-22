@@ -1,2 +1,2 @@
-include additional_config.ini
-recursive-include ui/ *.yaml
+include pioreactor_bubbler/additional_config.ini
+recursive-include pioreactor_bubbler/ui/ *.yaml

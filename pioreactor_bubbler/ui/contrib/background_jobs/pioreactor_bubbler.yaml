@@ -1,6 +1,6 @@
 ---
 name: Bubbler
-job_name: pioreactor_bubbler
+job_name: bubbler
 editable_settings:
   - key: duty_cycle
     unit: AU
