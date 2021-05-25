@@ -1,11 +1,11 @@
-### Pioreactor bubbler
+### Pioreactor air bubbler
 
 
 Add an air-pump / bubbler to your Pioreactor. This pump can run continuously, or if OD reading is running, will stop during a reading.
 
 ### Usage
 ```
-pio run bubbler
+pio run air_bubbler
 ```
 
 
@@ -16,7 +16,7 @@ pio run bubbler
 From the command line, run:
 
 ```
-pio install-plugin pioreactor_bubbler
+pio install-plugin pioreactor_air_bubbler
 ```
 
 
@@ -24,10 +24,10 @@ pio install-plugin pioreactor_bubbler
 
 ```
 [PWM]
-bubbler=<the PWM channel you pick>
+air_bubbler=<the PWM channel you pick>
 
 
-[bubbler]
+[air_bubbler]
 duty_cycle=<a integer between 0 and 100>
 ```
 

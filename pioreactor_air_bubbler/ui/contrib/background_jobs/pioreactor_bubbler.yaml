@@ -1,14 +1,14 @@
 ---
-name: Bubbler
-job_name: bubbler
+name: Air Bubbler
+job_name: air_bubbler
 display: true
 description: Start the bubbler.
-source: pioreactor-bubbler
+source: pioreactor_air_bubbler
 editable_settings:
   - key: duty_cycle
     unit: "%"
     label: Bubbler intensity
-    description: Modify the intensity of the bubbler. Value between 0 (off) and 100 (too high).
+    description: Modify the intensity of the air bubbler. Value between 0 (off) and 100 (too high).
     type: numeric
     default: null
     display: true

@@ -24,23 +24,25 @@ def clamp(minimum, x, maximum):
     return max(minimum, min(x, maximum))
 
 
-class Bubbler(BackgroundJobContrib):
+class AirBubbler(BackgroundJobContrib):
 
     editable_settings = ["duty_cycle"]
 
     def __init__(self, duty_cycle, hertz=60, unit=None, experiment=None):
-        super(Bubbler, self).__init__(
-            job_name="bubbler",
-            plugin_name="pioreactor_bubbler",
+        super(AirBubbler, self).__init__(
+            job_name="air_bubbler",
+            plugin_name="pioreactor_air_bubbler",
             unit=unit,
             experiment=experiment,
         )
 
         self.hertz = hertz
         try:
-            self.pin = PWM_TO_PIN[config.getint("PWM", "bubbler")]
+            self.pin = PWM_TO_PIN[config.getint("PWM", "air_bubbler")]
         except KeyError:
-            raise KeyError("Unable to find `bubbler` under PWM section in the config.ini")
+            raise KeyError(
+                "Unable to find `air_bubbler` under PWM section in the config.ini"
+            )
 
         GPIO.setup(self.pin, GPIO.OUT)
         GPIO.output(self.pin, 0)
@@ -75,7 +77,7 @@ class Bubbler(BackgroundJobContrib):
         elif (new_state == self.READY) and (self.state == self.SLEEPING):
             self.duty_cycle = self._previous_duty_cycle
             self.start_pumping()
-        super(Bubbler, self).set_state(new_state)
+        super(AirBubbler, self).set_state(new_state)
 
     def set_duty_cycle(self, value):
         self.duty_cycle = clamp(0, round(float(value)), 100)
@@ -91,8 +93,8 @@ class Bubbler(BackgroundJobContrib):
     def turn_off_pump_between_readings(self, msg):
 
         if not msg.payload:
-            # OD reading stopped, turn on bubbler always and exit
-            self.set_duty_cycle(config.getint("bubbler", "duty_cycle"))
+            # OD reading stopped, turn on air_bubbler always and exit
+            self.set_duty_cycle(config.getint("air_bubbler", "duty_cycle"))
             return
 
         # OD started - turn off pump immediately
@@ -113,7 +115,7 @@ class Bubbler(BackgroundJobContrib):
             if self.state != self.READY:
                 return
 
-            self.set_duty_cycle(config.getint("bubbler", "duty_cycle"))
+            self.set_duty_cycle(config.getint("air_bubbler", "duty_cycle"))
             time.sleep(ads_interval - (post_duration + pre_duration))
             self.set_duty_cycle(0)
 
@@ -146,16 +148,18 @@ class Bubbler(BackgroundJobContrib):
         self.sneak_in_timer.start()
 
 
-@click.command(name="bubbler")
-def click_bubbler():
+@click.command(name="air_bubbler")
+def click_air_bubbler():
     """
-    turn on bubbler
+    turn on air_bubbler
     """
     if "od_reading" in pio_jobs_running():
         dc = 0
     else:
-        dc = config.getint("bubbler", "duty_cycle")
+        dc = config.getint("air_bubbler", "duty_cycle")
 
-    Bubbler(duty_cycle=dc, unit=get_unit_name(), experiment=get_latest_experiment_name())
+    AirBubbler(
+        duty_cycle=dc, unit=get_unit_name(), experiment=get_latest_experiment_name()
+    )
 
     signal.pause()
