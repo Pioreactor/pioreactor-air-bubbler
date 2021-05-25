@@ -1,7 +1,14 @@
 ---
 name: Bubbler
 job_name: bubbler
+display: true
+description: Start the bubbler.
+source: pioreactor-bubbler
 editable_settings:
   - key: duty_cycle
-    unit: AU
-    label: Duty Cycle
+    unit: "%"
+    label: Bubbler intensity
+    description: Modify the intensity of the bubbler. Value between 0 (off) and 100 (too high).
+    type: numeric
+    default: null
+    display: true

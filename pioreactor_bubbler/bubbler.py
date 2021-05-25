@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import signal, sys, time
 import click
-from pioreactor.background_jobs.base import PluginBackgroundJob
+from pioreactor.background_jobs.base import BackgroundJobContrib
 from pioreactor.whoami import get_latest_experiment_name, get_unit_name, is_testing_env
 from pioreactor.utils import pio_jobs_running
 from pioreactor.config import config
@@ -24,7 +24,7 @@ def clamp(minimum, x, maximum):
     return max(minimum, min(x, maximum))
 
 
-class Bubbler(PluginBackgroundJob):
+class Bubbler(BackgroundJobContrib):
 
     editable_settings = ["duty_cycle"]
 
@@ -37,7 +37,11 @@ class Bubbler(PluginBackgroundJob):
         )
 
         self.hertz = hertz
-        self.pin = PWM_TO_PIN[config.getint("PWM", "bubbler")]
+        try:
+            self.pin = PWM_TO_PIN[config.getint("PWM", "bubbler")]
+        except KeyError:
+            raise KeyError("Unable to find `bubbler` under PWM section in the config.ini")
+
         GPIO.setup(self.pin, GPIO.OUT)
         GPIO.output(self.pin, 0)
 
