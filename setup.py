@@ -7,7 +7,7 @@ with open("requirements/requirements.txt") as f:
 
 setup(
     name="pioreactor_air_bubbler",
-    version="0.0.9",
+    version="0.0.11",
     license="MIT",
     install_requires=REQUIREMENTS,
     long_description=open("README.md").read(),
