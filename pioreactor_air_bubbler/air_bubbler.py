@@ -1,23 +1,14 @@
 # -*- coding: utf-8 -*-
-import signal, sys, time
+import signal, time
 import click
 from pioreactor.background_jobs.base import BackgroundJobContrib
-from pioreactor.whoami import get_latest_experiment_name, get_unit_name, is_testing_env
+from pioreactor.whoami import get_latest_experiment_name, get_unit_name
 from pioreactor.utils import pio_jobs_running
 from pioreactor.config import config
 from pioreactor.hardware_mappings import PWM_TO_PIN
 from pioreactor.pubsub import subscribe
 from pioreactor.utils.timing import RepeatedTimer
-
-if is_testing_env():
-    import fake_rpi
-
-    sys.modules["RPi"] = fake_rpi.RPi  # Fake RPi
-    sys.modules["RPi.GPIO"] = fake_rpi.RPi.GPIO  # Fake GPIO
-
-import RPi.GPIO as GPIO
-
-GPIO.setmode(GPIO.BCM)
+from pioreactor.utils.pwm import PWM
 
 
 def clamp(minimum, x, maximum):
@@ -38,16 +29,13 @@ class AirBubbler(BackgroundJobContrib):
 
         self.hertz = hertz
         try:
-            self.pin = PWM_TO_PIN[config.getint("PWM", "air_bubbler")]
+            self.pin = PWM_TO_PIN[config.getint("PWM_reverse", "air_bubbler")]
         except KeyError:
             raise KeyError(
                 "Unable to find `air_bubbler` under PWM section in the config.ini"
             )
 
-        GPIO.setup(self.pin, GPIO.OUT)
-        GPIO.output(self.pin, 0)
-
-        self.pwm = GPIO.PWM(self.pin, self.hertz)
+        self.pwm = PWM(self.pin, self.hertz)
         self.pwm.start(0)
 
         self.set_duty_cycle(duty_cycle)
@@ -61,7 +49,7 @@ class AirBubbler(BackgroundJobContrib):
 
         self.stop_pumping()
         self.pwm.stop()
-        GPIO.cleanup(self.pin)
+        self.pwm.cleanup()
 
     def stop_pumping(self):
         # if the user unpauses, we want to go back to their previous value, and not the default.
@@ -136,6 +124,7 @@ class AirBubbler(BackgroundJobContrib):
 
         # get interval, and confirm that the requirements are possible: post_duration + pre_duration <= ADS interval
         if ads_interval <= (post_duration + pre_duration):
+            # TODO: this should error out better. The thread errors, but the main program doesn't.
             raise ValueError("Your samples_per_second is too high to add in a pump.")
 
         self.sneak_in_timer = RepeatedTimer(ads_interval, sneak_in, run_immediately=False)

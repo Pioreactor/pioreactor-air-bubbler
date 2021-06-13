@@ -1,7 +1,7 @@
 ### Pioreactor air bubbler
 
 
-Add an air-pump / bubbler to your Pioreactor. This pump can run continuously, or if OD reading is running, will stop during a reading.
+Add an air-pump / bubbler to your [Pioreactor](https://pioreactor.com). This pump can run continuously, or if OD reading is running, will stop during a reading.
 
 ### Usage
 ```
