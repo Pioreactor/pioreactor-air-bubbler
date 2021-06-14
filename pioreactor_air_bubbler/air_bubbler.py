@@ -69,7 +69,7 @@ class AirBubbler(BackgroundJobContrib):
 
     def set_duty_cycle(self, value):
         self.duty_cycle = clamp(0, round(float(value)), 100)
-        self.pwm.ChangeDutyCycle(self.duty_cycle)
+        self.pwm.change_duty_cycle(self.duty_cycle)
 
     def start_passive_listeners(self):
 

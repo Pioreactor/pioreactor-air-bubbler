@@ -24,7 +24,7 @@ pio install-plugin pioreactor_air_bubbler
 
 ```
 [PWM]
-air_bubbler=<the PWM channel you pick>
+<the PWM channel you pick>=air_bubbler
 
 
 [air_bubbler]

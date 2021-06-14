@@ -7,10 +7,10 @@ with open("requirements/requirements.txt") as f:
 
 setup(
     name="pioreactor_air_bubbler",
-    version="0.0.3",
+    version="0.0.4",
     license="MIT",
     install_requires=REQUIREMENTS,
-    description="Add aa air bubbler to your Pioreactor as a background job",
+    description="Add an air bubbler to your Pioreactor as a background job",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     author_email="cam@pioreactor.com",
