@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
 
-with open("requirements/requirements.txt") as f:
-    REQUIREMENTS = f.read().splitlines()
-
 
 setup(
     name="pioreactor_air_bubbler",
     version="0.0.5",
     license="MIT",
-    install_requires=REQUIREMENTS,
     description="Add an air bubbler to your Pioreactor as a background job",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
