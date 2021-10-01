@@ -17,7 +17,7 @@ def clamp(minimum, x, maximum):
 
 class AirBubbler(BackgroundJobContrib):
 
-    editable_settings = ["duty_cycle"]
+    published_settings = {"duty_cycle": {'settable': True, 'unit': '%', 'datatype': 'float'}}
 
     def __init__(self, duty_cycle, hertz=60, unit=None, experiment=None):
         super(AirBubbler, self).__init__(
