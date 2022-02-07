@@ -1,5 +1,5 @@
 ---
-name: Air Bubbler
+display_name: Air Bubbler
 job_name: air_bubbler
 display: true
 description: Start the bubbler.
