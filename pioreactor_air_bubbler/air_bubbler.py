@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import time
+from time import sleep, time
 import click
 from pioreactor.background_jobs.base import BackgroundJobContrib
 from pioreactor.whoami import get_latest_experiment_name, get_unit_name
@@ -17,7 +17,7 @@ class AirBubbler(BackgroundJobContrib):
         "duty_cycle": {"settable": True, "unit": "%", "datatype": "float"}
     }
 
-    def __init__(self, duty_cycle, hertz=60, unit=None, experiment=None):
+    def __init__(self, duty_cycle: float, hertz: float=60, unit:str=None, experiment:str=None):
         super(AirBubbler, self).__init__(
             job_name="air_bubbler",
             plugin_name="pioreactor_air_bubbler",
@@ -90,14 +90,14 @@ class AirBubbler(BackgroundJobContrib):
         # pre_duration: duration between stopping the action and the next ADS reading
         # we have a pretty large pre_duration, since the air pump can introduce microbubbles
         # that we want to see dissipate.
-        post_duration, pre_duration = 0.6, 1.25
+        post_duration, pre_duration = 0.25, 2.0
 
         def sneak_in():
             if self.state != self.READY:
                 return
 
             self.set_duty_cycle(config.getint("air_bubbler", "duty_cycle"))
-            time.sleep(ads_interval - (post_duration + pre_duration))
+            sleep(ads_interval - (post_duration + pre_duration))
             self.set_duty_cycle(0)
 
         # this could fail in the following way:
@@ -119,15 +119,15 @@ class AirBubbler(BackgroundJobContrib):
         if ads_interval <= (post_duration + pre_duration):
             # TODO: this should error out better. The thread errors, but the main program doesn't.
             self.logger.error("Your samples_per_second is too high to add in a pump.")
-            self.set_state(self.DISCONNECTED)
+            self.clean_up()
 
         self.sneak_in_timer = RepeatedTimer(ads_interval, sneak_in, run_immediately=False)
 
         time_to_next_ads_reading = ads_interval - (
-            (time.time() - ads_start_time) % ads_interval
+            (time() - ads_start_time) % ads_interval
         )
 
-        time.sleep(time_to_next_ads_reading + post_duration)
+        sleep(time_to_next_ads_reading + post_duration)
         self.sneak_in_timer.start()
 
 
@@ -137,12 +137,14 @@ def click_air_bubbler():
     turn on air bubbler
     """
     if is_pio_job_running("od_reading"):
-        dc = 0
+        dc = 0.0
     else:
-        dc = config.getint("air_bubbler", "duty_cycle")
+        dc = config.getfloat("air_bubbler", "duty_cycle")
+
+    hertz = config.getfloat("air_bubbler", "hertz")
 
     ab = AirBubbler(
-        duty_cycle=dc, unit=get_unit_name(), experiment=get_latest_experiment_name()
+        duty_cycle=dc, hertz=hertz, unit=get_unit_name(), experiment=get_latest_experiment_name()
     )
 
     ab.block_until_disconnected()
