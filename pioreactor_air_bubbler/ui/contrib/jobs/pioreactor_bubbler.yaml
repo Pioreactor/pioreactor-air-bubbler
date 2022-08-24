@@ -1,10 +1,10 @@
 ---
-name: Air Bubbler
+display_name: Air Bubbler
 job_name: air_bubbler
 display: true
 description: Start the bubbler.
 source: pioreactor_air_bubbler
-editable_settings:
+published_settings:
   - key: duty_cycle
     unit: "%"
     label: Bubbler intensity

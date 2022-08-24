@@ -14,7 +14,7 @@ from pioreactor.utils.pwm import PWM
 class AirBubbler(BackgroundJobContrib):
 
     published_settings = {
-        "duty_cycle": {"settable": True, "unit": "%", "datatype": "float"}
+        "duty_cycle": {"settable": False, "unit": "%", "datatype": "float"}
     }
 
     def __init__(self, duty_cycle: float, hertz: float=60, unit:str=None, experiment:str=None):
@@ -61,6 +61,7 @@ class AirBubbler(BackgroundJobContrib):
         self.start_pumping()
 
     def set_duty_cycle(self, value):
+        self._previous_duty_cycle = self.duty_cycle
         self.duty_cycle = clamp(0, round(float(value)), 100)
         self.pwm.change_duty_cycle(self.duty_cycle)
 
