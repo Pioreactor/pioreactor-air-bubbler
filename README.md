@@ -28,7 +28,11 @@ pio install-plugin pioreactor_air_bubbler
 
 
 [air_bubbler]
-duty_cycle=<a integer between 0 and 100>
+duty_cycle=10
+hertz=200
+pre_delay_duration=1.5
+post_delay_duration=0.75
+enable_dodging_od=1
 ```
 
 #### Hardware
