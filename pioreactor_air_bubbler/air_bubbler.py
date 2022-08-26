@@ -14,7 +14,6 @@ class AirBubbler(BackgroundJobWithDodgingContrib):
     published_settings = {
         "duty_cycle": {"settable": False, "unit": "%", "datatype": "float"}
     }
-    _previous_duty_cycle = 0.0
 
     def __init__(self, duty_cycle: float, hertz: float=60, unit:str=None, experiment:str=None):
         super(AirBubbler, self).__init__(
@@ -32,10 +31,10 @@ class AirBubbler(BackgroundJobWithDodgingContrib):
                 "Unable to find `air_bubbler` under PWM section in the config.ini"
             )
 
+
+        self.duty_cycle = duty_cycle
         self.pwm = PWM(self.pin, self.hertz)
         self.pwm.start(0)
-
-        self.set_duty_cycle(duty_cycle)
 
     def on_disconnected(self):
         self.stop_pumping()
@@ -45,17 +44,15 @@ class AirBubbler(BackgroundJobWithDodgingContrib):
     def stop_pumping(self):
         if hasattr(self, "pwm"):
             # if the user unpauses, we want to go back to their previous value, and not the default.
-            self._previous_duty_cycle = self.duty_cycle
-            self.set_duty_cycle(0)
+            self.pwm.change_duty_cycle(0)
 
     def start_pumping(self):
-        self.set_duty_cycle(self._previous_duty_cycle)
+        self.pwm.change_duty_cycle(self.duty_cycle)
 
     def on_sleeping(self):
         self.stop_pumping()
 
     def on_sleeping_to_ready(self) -> None:
-        self.duty_cycle = self._previous_duty_cycle
         self.start_pumping()
 
     def set_duty_cycle(self, value):
@@ -74,15 +71,12 @@ def click_air_bubbler():
     """
     turn on air bubbler
     """
-    if is_pio_job_running("od_reading"):
-        dc = 0.0
-    else:
-        dc = config.getfloat("air_bubbler", "duty_cycle")
 
+    dc = config.getfloat("air_bubbler", "duty_cycle")
     hertz = config.getfloat("air_bubbler", "hertz")
 
     ab = AirBubbler(
         duty_cycle=dc, hertz=hertz, unit=get_unit_name(), experiment=get_latest_experiment_name()
     )
-
+    ab.start_pumping()
     ab.block_until_disconnected()
