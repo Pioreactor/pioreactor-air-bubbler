@@ -43,7 +43,6 @@ class AirBubbler(BackgroundJobWithDodgingContrib):
 
     def stop_pumping(self):
         if hasattr(self, "pwm"):
-            # if the user unpauses, we want to go back to their previous value, and not the default.
             self.pwm.change_duty_cycle(0)
 
     def start_pumping(self):
