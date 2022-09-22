@@ -11,13 +11,13 @@ from pioreactor.utils.pwm import PWM
 
 class AirBubbler(BackgroundJobWithDodgingContrib):
 
+    job_name="air_bubbler"
     published_settings = {
         "duty_cycle": {"settable": False, "unit": "%", "datatype": "float"}
     }
 
     def __init__(self, duty_cycle: float, hertz: float=60, unit:str=None, experiment:str=None):
         super(AirBubbler, self).__init__(
-            job_name="air_bubbler",
             plugin_name="pioreactor_air_bubbler",
             unit=unit,
             experiment=experiment,
