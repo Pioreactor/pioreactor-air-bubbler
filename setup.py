@@ -13,7 +13,6 @@ setup(
     author="Cam Davidson Pilon",
     url="https://github.com/Pioreactor/pioreactor-air-bubbler",
     packages=find_packages(),
-    include_package_data=True,
     entry_points={
         "pioreactor.plugins": "pioreactor_air_bubbler = pioreactor_air_bubbler"
     },
