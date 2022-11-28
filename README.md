@@ -3,6 +3,9 @@
 
 Add an air-pump / bubbler to your [Pioreactor](https://pioreactor.com). This pump can run continuously, or if OD reading is running, will stop during a reading.
 
+
+
+
 ### Usage
 ```
 pio run air_bubbler
@@ -37,4 +40,7 @@ enable_dodging_od=1
 
 #### Hardware
 
-Connect the PWM channel to the air pump's leads. Connect a 3mm ID tube between the air pump and a luer lock on the vial's cap.
+1. Connect the PWM channel to the air pump's power source.
+2. Connect a tube between the air pump and a tube in the vial's cap, via luer lock.
+3. The connecting tube in the vial cap can be pushed into the liquid for bubbling, or left in the headspace to exchange air.
+4. Optional: a 0.22 micron filter can be placed along the air path to filter contaminants.

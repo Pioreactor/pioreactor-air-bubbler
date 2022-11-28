@@ -33,7 +33,7 @@ class AirBubbler(BackgroundJobWithDodgingContrib):
 
 
         self.duty_cycle = duty_cycle
-        self.pwm = PWM(self.pin, self.hertz)
+        self.pwm = PWM(self.pin, self.hertz, unit=self.unit, experiment=self.experiment)
         self.pwm.start(0)
 
     def on_disconnected(self):
