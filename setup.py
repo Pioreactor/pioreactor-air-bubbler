@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name="pioreactor_air_bubbler",
+    name="pioreactor-air-bubbler",
     version="0.3.2",
     license="MIT",
     description="Add an air bubbler to your Pioreactor as a background job",
