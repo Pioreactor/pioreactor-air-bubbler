@@ -39,7 +39,7 @@ class AirBubbler(BackgroundJobWithDodgingContrib):
     def on_disconnected(self):
         self.stop_pumping()
         self.pwm.stop()
-        self.pwm.cleanup()
+        self.pwm.clean_up()
 
     def stop_pumping(self):
         if hasattr(self, "pwm"):
