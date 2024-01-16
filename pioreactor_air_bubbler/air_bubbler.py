@@ -1,22 +1,21 @@
 # -*- coding: utf-8 -*-
-from time import sleep, time
+from __future__ import annotations
+
 import click
 from pioreactor.background_jobs.base import BackgroundJobWithDodgingContrib
-from pioreactor.whoami import get_latest_experiment_name, get_unit_name
-from pioreactor.utils import is_pio_job_running, clamp
 from pioreactor.config import config
 from pioreactor.hardware import PWM_TO_PIN
+from pioreactor.utils import clamp
 from pioreactor.utils.pwm import PWM
+from pioreactor.whoami import get_latest_experiment_name
+from pioreactor.whoami import get_unit_name
 
 
 class AirBubbler(BackgroundJobWithDodgingContrib):
+    job_name = "air_bubbler"
+    published_settings = {"duty_cycle": {"settable": False, "unit": "%", "datatype": "float"}}
 
-    job_name="air_bubbler"
-    published_settings = {
-        "duty_cycle": {"settable": False, "unit": "%", "datatype": "float"}
-    }
-
-    def __init__(self, duty_cycle: float, hertz: float=60, unit:str=None, experiment:str=None):
+    def __init__(self, unit: str, experiment: str, duty_cycle: float, hertz: float = 60):
         super(AirBubbler, self).__init__(
             plugin_name="pioreactor_air_bubbler",
             unit=unit,
@@ -27,10 +26,7 @@ class AirBubbler(BackgroundJobWithDodgingContrib):
         try:
             self.pin = PWM_TO_PIN[config.get("PWM_reverse", "air_bubbler")]
         except KeyError:
-            raise KeyError(
-                "Unable to find `air_bubbler` under PWM section in the config.ini"
-            )
-
+            raise KeyError("Unable to find `air_bubbler` under PWM section in the config.ini")
 
         self.duty_cycle = duty_cycle
         self.pwm = PWM(self.pin, self.hertz, unit=self.unit, experiment=self.experiment)
@@ -74,8 +70,6 @@ def click_air_bubbler():
     dc = config.getfloat("air_bubbler", "duty_cycle")
     hertz = config.getfloat("air_bubbler", "hertz")
 
-    ab = AirBubbler(
-        duty_cycle=dc, hertz=hertz, unit=get_unit_name(), experiment=get_latest_experiment_name()
-    )
+    ab = AirBubbler(unit=get_unit_name(), experiment=get_latest_experiment_name(), duty_cycle=dc, hertz=hertz)
     ab.start_pumping()
     ab.block_until_disconnected()

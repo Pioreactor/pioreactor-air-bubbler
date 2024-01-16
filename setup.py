@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-from setuptools import setup, find_packages
+from __future__ import annotations
+
+from setuptools import find_packages
+from setuptools import setup
 
 
 setup(
@@ -14,7 +17,5 @@ setup(
     url="https://github.com/Pioreactor/pioreactor-air-bubbler",
     packages=find_packages(),
     include_package_data=True,
-    entry_points={
-        "pioreactor.plugins": "pioreactor_air_bubbler = pioreactor_air_bubbler"
-    },
+    entry_points={"pioreactor.plugins": "pioreactor_air_bubbler = pioreactor_air_bubbler"},
 )
