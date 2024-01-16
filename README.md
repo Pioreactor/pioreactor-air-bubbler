@@ -30,7 +30,7 @@ pio install-plugin pioreactor_air_bubbler
 <the PWM channel you pick>=air_bubbler
 
 
-[air_bubbler]
+[air_bubbler.config]
 duty_cycle=10
 hertz=200
 pre_delay_duration=1.5

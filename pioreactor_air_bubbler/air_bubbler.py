@@ -24,7 +24,7 @@ class AirBubbler(BackgroundJobWithDodgingContrib):
 
         self.hertz = hertz
         try:
-            self.pin = PWM_TO_PIN[config.get("PWM_reverse", "air_bubbler")]
+            self.pin = PWM_TO_PIN[config.get("PWM_reverse", "air_bubbler.config")]
         except KeyError:
             raise KeyError("Unable to find `air_bubbler` under PWM section in the config.ini")
 
@@ -67,8 +67,8 @@ def click_air_bubbler():
     turn on air bubbler
     """
 
-    dc = config.getfloat("air_bubbler", "duty_cycle")
-    hertz = config.getfloat("air_bubbler", "hertz")
+    dc = config.getfloat("air_bubbler.config", "duty_cycle")
+    hertz = config.getfloat("air_bubbler.config", "hertz")
 
     ab = AirBubbler(unit=get_unit_name(), experiment=get_latest_experiment_name(), duty_cycle=dc, hertz=hertz)
     ab.start_pumping()
