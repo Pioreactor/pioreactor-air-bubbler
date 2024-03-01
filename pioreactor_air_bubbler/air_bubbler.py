@@ -13,7 +13,7 @@ from pioreactor.whoami import get_unit_name
 
 class AirBubbler(BackgroundJobWithDodgingContrib):
     job_name = "air_bubbler"
-    published_settings = {"duty_cycle": {"settable": False, "unit": "%", "datatype": "float"}}
+    published_settings = {"duty_cycle": {"settable": True, "unit": "%", "datatype": "float"}}
 
     def __init__(self, unit: str, experiment: str, duty_cycle: float, hertz: float = 60):
         super(AirBubbler, self).__init__(
