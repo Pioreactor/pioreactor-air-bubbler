@@ -7,7 +7,7 @@ from setuptools import setup
 
 setup(
     name="pioreactor-air-bubbler",
-    version="0.5.0",
+    version="0.8.0",
     license="MIT",
     description="Add an air bubbler to your Pioreactor as a background job",
     long_description=open("README.md").read(),

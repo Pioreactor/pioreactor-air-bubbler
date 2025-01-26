@@ -19,7 +19,7 @@ pio run air_bubbler
 From the command line, run:
 
 ```
-pio install-plugin pioreactor_air_bubbler
+pio plugins install pioreactor_air_bubbler
 ```
 
 
