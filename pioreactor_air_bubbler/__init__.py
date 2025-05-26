@@ -31,7 +31,7 @@ class AirBubbler(BackgroundJobWithDodgingContrib):
 
         self.duty_cycle = duty_cycle
         self.pwm = PWM(
-            self.pin, self.hertz, unit=self.unit, experiment=self.experiment, pubsub_client=self.pub_client
+            self.pin, self.hertz, unit=self.unit, experiment=self.experiment, pub_client=self.pub_client
         )
         self.pwm.start(0)
 
