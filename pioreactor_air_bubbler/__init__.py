@@ -16,11 +16,19 @@ class AirBubbler(BackgroundJobWithDodgingContrib):
     job_name = "air_bubbler"
     published_settings = {"duty_cycle": {"settable": True, "unit": "%", "datatype": "float"}}
 
-    def __init__(self, unit: str, experiment: str, duty_cycle: float, hertz: float = 60):
+    def __init__(
+        self,
+        unit: str,
+        experiment: str,
+        duty_cycle: float,
+        hertz: float = 60,
+        enable_dodging_od: bool = False,
+    ):
         super(AirBubbler, self).__init__(
             plugin_name="pioreactor_air_bubbler",
             unit=unit,
             experiment=experiment,
+            enable_dodging_od=enable_dodging_od,
         )
 
         self.hertz = hertz
@@ -79,7 +87,10 @@ def start_air_bubbler():
     hertz = config.getfloat("air_bubbler.config", "hertz")
     unit = get_unit_name()
     experiment = get_assigned_experiment_name(unit)
+    enable_dodging_od = config.getboolean("air_bubbler.config", "enable_dodging_od", fallback="false")
 
-    ab = AirBubbler(unit=unit, experiment=experiment, duty_cycle=dc, hertz=hertz)
+    ab = AirBubbler(
+        unit=unit, experiment=experiment, duty_cycle=dc, hertz=hertz, enable_dodging_od=enable_dodging_od
+    )
     ab.start_pumping()
     ab.block_until_disconnected()
