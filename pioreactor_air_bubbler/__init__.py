@@ -5,7 +5,7 @@ import click
 from pioreactor.background_jobs.base import BackgroundJobWithDodgingContrib
 from pioreactor.cli.run import run
 from pioreactor.config import config
-from pioreactor.hardware import PWM_TO_PIN
+from pioreactor.hardware import get_pwm_to_pin_map
 from pioreactor.utils import clamp
 from pioreactor.utils.pwm import PWM
 from pioreactor.whoami import get_assigned_experiment_name
@@ -33,6 +33,7 @@ class AirBubbler(BackgroundJobWithDodgingContrib):
 
         self.hertz = hertz
         try:
+            PWM_TO_PIN = get_pwm_to_pin_map()
             self.pin = PWM_TO_PIN[config.get("PWM_reverse", "air_bubbler")]
         except KeyError:
             raise KeyError("Unable to find `air_bubbler` under PWM section in the config.ini")
