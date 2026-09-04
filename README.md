@@ -1,34 +1,34 @@
-### Pioreactor air bubbler
-
+# Pioreactor air bubbler
 
 Add an air-pump / bubbler to your [Pioreactor](https://pioreactor.com). This pump can run continuously, or if OD reading is running, will stop during a reading.
 
+## Usage
 
-
-
-### Usage
-```
+```console
 pio run air_bubbler
 ```
 
+The configured duty cycle, PWM frequency, and OD-dodging behavior can be overridden for one run:
 
-### Installation
+```console
+pio run air_bubbler --duty-cycle 15 --hertz 200 --enable-dodging-od
+```
 
-#### Software
+## Installation
+
+### Software
 
 From the command line, run:
 
-```
+```console
 pio plugins install pioreactor_air_bubbler
 ```
 
-
 (Optional) Edit the following to your `config.ini`
 
-```
+```ini
 [PWM]
 <the PWM channel you pick>=air_bubbler
-
 
 [air_bubbler.config]
 duty_cycle=10
@@ -38,7 +38,7 @@ post_delay_duration=0.75
 enable_dodging_od=1
 ```
 
-#### Hardware
+### Hardware
 
 1. Connect the PWM channel to the air pump's power source.
 2. Connect a tube between the air pump and a tube in the vial's cap, via luer lock.
