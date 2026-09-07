@@ -2,13 +2,13 @@
 display_name: Air Bubbler
 job_name: air_bubbler
 display: true
-description: Start the bubbler.
+description: Aerate with short bursts and a rest between bursts.
 source: pioreactor_air_bubbler
 published_settings:
   - key: duty_cycle
     unit: "%"
-    label: Bubbler intensity
-    description: Modify the intensity of the air bubbler. Value between 0 (off) and 100 (high).
+    label: Pump strength
+    description: Pump strength while bubbling, from 0 (off) to 100. Tune for modest bubbles; this is not the burst frequency.
     type: numeric
     display: true
     editable: true

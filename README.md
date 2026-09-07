@@ -1,6 +1,6 @@
 # Pioreactor air bubbler
 
-Add an air-pump / bubbler to your [Pioreactor](https://pioreactor.com). This pump can run continuously, or if OD reading is running, will stop during a reading.
+Add an air-pump / bubbler to your [Pioreactor](https://pioreactor.com). By default, the pump runs in short bursts: **1 second on, followed by at least 30 seconds off**. OD dodging can interrupt or delay a burst; it does not trigger extra bursts.
 
 ## Usage
 
@@ -8,11 +8,44 @@ Add an air-pump / bubbler to your [Pioreactor](https://pioreactor.com). This pum
 pio run air_bubbler
 ```
 
-The configured duty cycle, PWM frequency, and OD-dodging behavior can be overridden for one run:
+Override pump strength, burst timing, PWM frequency, and OD dodging for one run:
 
 ```console
-pio run air_bubbler --duty-cycle 15 --hertz 200 --enable-dodging-od
+pio run air_bubbler --duty-cycle 15 --burst-duration 1 --rest-duration 60 --enable-dodging-od
 ```
+
+Burst duration must be greater than zero and at most 2 seconds. Rest duration must be at least 30 seconds. These limits apply through config, CLI, and live settings. Pump strength is PWM duty cycle, separate from the burst/rest schedule.
+
+Every burst ends with a full rest, even when OD reading stops it early. Missed bursts are not caught up. Stopping OD reading keeps burst operation active. Changing pump strength while resting does not start the pump. Changing burst duration stops an active burst; changing rest duration never shortens a rest already in progress.
+
+These defaults and bounds are initial settings for bench validation, not validated foam-safe limits or a guarantee of sufficient oxygen transfer. Tune pump strength for modest bubbles and observe your culture. Software timing is subject to operating-system scheduling.
+
+### Continuous operation — advanced use only
+
+**The separate `air_bubbler_continuous` job has no burst/rest limits.** Sustained bubbling can cause foaming, vial-cap leaks, and media-tube contamination. OD dodging alone does not prevent excessive aeration. Use this mode only for a setup where sustained aeration has been deliberately evaluated.
+
+```console
+pio run air_bubbler_continuous
+```
+
+OD dodging still applies when enabled. Without active OD dodging, this job pumps continuously. Starting it emits a warning in the job log. It has no UI YAML descriptor and cannot be selected from the normal job UI. The visible `air_bubbler` job always uses bursts; there is no mode switch.
+
+Both jobs use the same `[PWM]` assignment named `air_bubbler`. Stop one before starting the other; the PWM channel lock prevents a second job from claiming an occupied channel.
+
+Continuous-job settings are independent, under `[air_bubbler_continuous.config]`:
+
+```ini
+[air_bubbler_continuous.config]
+duty_cycle=10
+hertz=200
+pre_delay_duration=1.5
+post_delay_duration=0.75
+enable_dodging_od=1
+```
+
+The continuous command accepts `--duty-cycle`, `--hertz`, and the OD-dodging flags, but no burst/rest options. Its MQTT settings and job controls use `air_bubbler_continuous`.
+
+**Upgrade behavior:** `air_bubbler` now always uses bursts, even if it previously ran continuously. Pump strength and OD-delay settings retain their configured values. For deliberate continuous operation, stop `air_bubbler` and start `air_bubbler_continuous` explicitly.
 
 ## Installation
 
@@ -33,6 +66,8 @@ pio plugins install pioreactor_air_bubbler
 [air_bubbler.config]
 duty_cycle=10
 hertz=200
+burst_duration=1
+rest_duration=30
 pre_delay_duration=1.5
 post_delay_duration=0.75
 enable_dodging_od=1
