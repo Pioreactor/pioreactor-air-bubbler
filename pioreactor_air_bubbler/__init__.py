@@ -208,16 +208,16 @@ class AirBubbler(_AirBubblerBase):
                 self._rest_ends_at = monotonic() + self.rest_duration
 
     def set_burst_duration(self, value: float) -> None:
-        if not 0 < value <= 2:
-            raise ValueError("burst_duration must be greater than 0 and at most 2 seconds")
+        if not 0 < value:
+            raise ValueError("burst_duration must be greater than 0.")
         with self._pump_lock:
             self.burst_duration = float(value)
             if self._pump_running:
                 self.stop_pumping()
 
     def set_rest_duration(self, value: float) -> None:
-        if not isfinite(value) or value < 30:
-            raise ValueError("rest_duration must be at least 30 seconds and finite")
+        if not isfinite(value) or value <= 0:
+            raise ValueError("rest_duration be finite")
         with self._pump_lock:
             self.rest_duration = float(value)
             if self._rest_ends_at > monotonic():
@@ -322,7 +322,7 @@ def click_air_bubbler_continuous(
     duty_cycle = (
         duty_cycle
         if duty_cycle is not None
-        else config.getfloat("air_bubbler_continuous.config", "duty_cycle", fallback=10.0)
+        else config.getfloat("air_bubbler_continuous.config", "duty_cycle", fallback=70.0)
     )
     hertz = (
         hertz

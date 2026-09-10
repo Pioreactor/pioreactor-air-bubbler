@@ -14,7 +14,6 @@ Override pump strength, burst timing, PWM frequency, and OD dodging for one run:
 pio run air_bubbler --duty-cycle 15 --burst-duration 1 --rest-duration 60 --enable-dodging-od
 ```
 
-Burst duration must be greater than zero and at most 2 seconds. Rest duration must be at least 30 seconds. These limits apply through config, CLI, and live settings. Pump strength is PWM duty cycle, separate from the burst/rest schedule.
 
 Every burst ends with a full rest, even when OD reading stops it early. Missed bursts are not caught up. Stopping OD reading keeps burst operation active. Changing pump strength while resting does not start the pump. Changing burst duration stops an active burst; changing rest duration never shortens a rest already in progress.
 
@@ -36,7 +35,7 @@ Continuous-job settings are independent, under `[air_bubbler_continuous.config]`
 
 ```ini
 [air_bubbler_continuous.config]
-duty_cycle=10
+duty_cycle=70
 hertz=200
 pre_delay_duration=1.5
 post_delay_duration=0.75
