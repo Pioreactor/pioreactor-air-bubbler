@@ -14,3 +14,19 @@ published_settings:
     editable: true
     min: 0
     max: 100
+  - key: burst_duration
+    unit: s
+    label: Burst duration
+    description: Seconds of bubbling in each burst.
+    type: numeric
+    display: true
+    editable: true
+    min: 0
+  - key: rest_duration
+    unit: s
+    label: Rest duration
+    description: Seconds of rest between bursts.
+    type: numeric
+    display: true
+    editable: true
+    min: 0
