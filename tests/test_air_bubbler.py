@@ -99,7 +99,16 @@ def test_duty_cycle_change_updates_a_running_bubbler() -> None:
     bubbler.pwm.change_duty_cycle.assert_called_once_with(25)
 
 
-def test_click_command_uses_context_manager_and_cli_overrides(monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize(
+    "timing_options,burst_duration,rest_duration",
+    [([], 1.0, 30.0), (["--burst-duration", "2.1", "--rest-duration", "27"], 2.1, 27.0)],
+)
+def test_click_command_uses_context_manager_and_cli_overrides(
+    monkeypatch: pytest.MonkeyPatch,
+    timing_options: list[str],
+    burst_duration: float,
+    rest_duration: float,
+) -> None:
     job = MagicMock()
     job.__enter__.return_value = job
     air_bubbler = MagicMock(return_value=job)
@@ -109,7 +118,7 @@ def test_click_command_uses_context_manager_and_cli_overrides(monkeypatch: pytes
 
     result = CliRunner().invoke(
         plugin.click_air_bubbler,
-        ["--duty-cycle", "25", "--hertz", "100", "--enable-dodging-od"],
+        ["--duty-cycle", "25", "--hertz", "100", "--enable-dodging-od", *timing_options],
     )
 
     assert result.exit_code == 0
@@ -119,8 +128,8 @@ def test_click_command_uses_context_manager_and_cli_overrides(monkeypatch: pytes
         duty_cycle=25.0,
         hertz=100.0,
         enable_dodging_od=True,
-        burst_duration=1.0,
-        rest_duration=30.0,
+        burst_duration=burst_duration,
+        rest_duration=rest_duration,
     )
     job.block_until_disconnected.assert_called_once_with()
     job.__exit__.assert_called_once()
@@ -280,14 +289,24 @@ def test_sleep_and_disconnect_prevent_timer_restarts(
     bubbler.pwm.change_duty_cycle.assert_not_called()
 
 
-@pytest.mark.parametrize("value", [0, -1, 2.1, float("nan"), float("inf")])
+@pytest.mark.parametrize("burst_duration,rest_duration", [(0.1, 0.1), (2.1, 27.0)])
+def test_positive_finite_durations_are_accepted(
+    bubbler: plugin.AirBubbler, burst_duration: float, rest_duration: float
+) -> None:
+    bubbler.set_burst_duration(burst_duration)
+    bubbler.set_rest_duration(rest_duration)
+    assert bubbler.burst_duration == burst_duration
+    assert bubbler.rest_duration == rest_duration
+
+
+@pytest.mark.parametrize("value", [0, -1, float("nan"), float("inf"), float("-inf")])
 def test_invalid_burst_duration_is_rejected(bubbler: plugin.AirBubbler, value: float) -> None:
     with pytest.raises(ValueError):
         bubbler.set_burst_duration(value)
     assert bubbler.burst_duration == 1
 
 
-@pytest.mark.parametrize("value", [0, 29, float("nan"), float("inf")])
+@pytest.mark.parametrize("value", [0, -1, float("nan"), float("inf"), float("-inf")])
 def test_invalid_rest_duration_is_rejected(bubbler: plugin.AirBubbler, value: float) -> None:
     with pytest.raises(ValueError):
         bubbler.set_rest_duration(value)

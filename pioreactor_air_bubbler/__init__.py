@@ -208,8 +208,8 @@ class AirBubbler(_AirBubblerBase):
                 self._rest_ends_at = monotonic() + self.rest_duration
 
     def set_burst_duration(self, value: float) -> None:
-        if not 0 < value:
-            raise ValueError("burst_duration must be greater than 0.")
+        if not isfinite(value) or value <= 0:
+            raise ValueError("burst_duration must be greater than 0 and finite")
         with self._pump_lock:
             self.burst_duration = float(value)
             if self._pump_running:
@@ -217,7 +217,7 @@ class AirBubbler(_AirBubblerBase):
 
     def set_rest_duration(self, value: float) -> None:
         if not isfinite(value) or value <= 0:
-            raise ValueError("rest_duration be finite")
+            raise ValueError("rest_duration must be greater than 0 and finite")
         with self._pump_lock:
             self.rest_duration = float(value)
             if self._rest_ends_at > monotonic():
@@ -255,15 +255,15 @@ class AirBubblerContinuous(_AirBubblerBase):
 @click.option("--enable-dodging-od/--disable-dodging-od", default=None)
 @click.option(
     "--burst-duration",
-    type=click.FloatRange(min=0, min_open=True, max=2),
+    type=click.FloatRange(min=0, min_open=True),
     default=None,
-    help="Seconds per burst (maximum 2).",
+    help="Seconds per burst (greater than 0).",
 )
 @click.option(
     "--rest-duration",
-    type=click.FloatRange(min=30),
+    type=click.FloatRange(min=0, min_open=True),
     default=None,
-    help="Minimum seconds off after each burst (at least 30).",
+    help="Minimum seconds off after each burst (greater than 0).",
 )
 def click_air_bubbler(
     duty_cycle: float | None,
