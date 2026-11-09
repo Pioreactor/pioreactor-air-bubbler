@@ -12,7 +12,7 @@ README = Path("README.md").read_text(encoding="utf-8")
 
 setup(
     name="pioreactor-air-bubbler",
-    version="0.13.2",
+    version="0.13.3",
     license="MIT",
     description="Add an air bubbler to your Pioreactor as a background job",
     long_description=README,

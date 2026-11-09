@@ -94,7 +94,7 @@ class _AirBubblerBase(BackgroundJobWithDodgingContrib):
     def stop_pumping(self) -> None:
         with self._pump_lock:
             if hasattr(self, "pwm"):
-                self.pwm.change_duty_cycle(0)
+                self.pwm.stop()
             self._pump_running = False
 
     def start_pumping(self) -> None:

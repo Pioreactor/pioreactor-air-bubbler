@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from signal import SIGINT
 from threading import RLock
 from typing import cast
 from unittest.mock import MagicMock
@@ -163,7 +164,7 @@ def test_burst_stops_and_requires_full_rest(
     cast(MagicMock, bubbler.pwm.change_duty_cycle).assert_called_with(70)
     monkeypatch.setattr(plugin, "monotonic", lambda: 1.0)
     bubbler.start_pumping()
-    cast(MagicMock, bubbler.pwm.change_duty_cycle).assert_called_with(0)
+    cast(MagicMock, bubbler.pwm.stop).assert_called_once_with()
     assert not bubbler._pump_running
     monkeypatch.setattr(plugin, "monotonic", lambda: 30.9)
     bubbler.set_duty_cycle(80)
@@ -287,6 +288,56 @@ def test_sleep_and_disconnect_prevent_timer_restarts(
     bubbler.action_to_do_after_od_reading()
     bubbler.start_pumping()
     bubbler.pwm.change_duty_cycle.assert_not_called()
+
+
+@pytest.mark.parametrize("continuous", [False, True])
+@pytest.mark.parametrize("pwm_exits_first", [False, True])
+def test_disconnect_cleans_up_even_when_pwm_exits_first(
+    bubbler: plugin.AirBubbler,
+    continuous_bubbler: plugin.AirBubblerContinuous,
+    continuous: bool,
+    pwm_exits_first: bool,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    from pioreactor.utils import sqlite_cache
+
+    monkeypatch.setattr(
+        sqlite_cache, "config", MagicMock(get=MagicMock(return_value=str(tmp_path / "cache.sqlite")))
+    )
+    job = continuous_bubbler if continuous else bubbler
+    job.pwm = plugin.PWM(
+        16, 200, unit="unit", experiment="experiment", pub_client=MagicMock(), logger=job.logger
+    )
+    dodging_timer = MagicMock()
+    job.sneak_in_timer = dodging_timer
+    if not continuous:
+        job.pump_timer = MagicMock()
+    try:
+        job.pwm.lock()
+        job.pwm.start(0)
+        job.start_pumping()
+        assert job.pwm.duty_cycle == 70
+
+        if pwm_exits_first:
+            job.pwm._exit(SIGINT)
+            assert job.pwm.is_cleaned_up
+
+        job.on_disconnected()
+
+        assert job._pump_closed
+        assert not job._pump_running
+        assert job.pwm.is_cleaned_up
+        assert job.pwm.duty_cycle == 0
+        assert not job.pwm.is_locked()
+        dodging_timer.cancel.assert_called_once()
+        if not continuous:
+            cast(MagicMock, job.pump_timer).cancel.assert_called_once()
+        job.on_disconnected()
+        job.start_pumping()
+        assert not job._pump_running
+    finally:
+        job.pwm.clean_up()
 
 
 @pytest.mark.parametrize("burst_duration,rest_duration", [(0.1, 0.1), (2.1, 27.0)])
